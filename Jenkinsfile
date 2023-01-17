@@ -2,16 +2,19 @@ pipeline{
     agent {
         label 'MAVEN'
     }
-    
+     parameters {
+        choice choices: ['main', 'first_release'], description: 'Pick the branch', name: 'Select_Branch'
+        string defaultValue: 'package', description: 'Choose the Maven Goal', name: 'Select_MavenGoal'
+    }
     stages{
         stage('git_clone'){
             steps{
-                git branch: 'first_rel', url: 'https://github.com/annem-sriram/openmrs-core.git'
+                git branch: "${params.SELECT_BRANCH}", url: 'https://github.com/annem-sriram/openmrs-core.git'
             }
         }
         stage('build'){
         steps{
-            sh 'mvn clean package'
+            sh "mvn ${params.Select_MavenGoal}"
             }
         }
         stage('archive-artifacts'){
