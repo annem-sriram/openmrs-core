@@ -2,6 +2,7 @@ pipeline{
     agent {
         label 'MAVEN'
     }
+    
     stages{
         stage('git_clone'){
             steps{
