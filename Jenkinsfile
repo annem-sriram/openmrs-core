@@ -1,44 +1,26 @@
-pipeline {
+pipeline{
     agent {
-	    label "OPENJDK-17-MVN-3.6.3"
-	}
-    stages {
-        stage ('Clone') {
-            steps {
-                git branch: 'master', url: "https://github.com/annem-sriram/openmrs-core.git"
+        label 'MAVEN'
+    }
+    stages{
+        stage('git_clone'){
+            steps{
+                git branch: 'first_rel', url: 'https://github.com/annem-sriram/openmrs-core.git'
             }
         }
-
-        stage ('Artifactory configuration') {
-            steps {
-                rtMavenDeployer (
-                    id: "MAVEN_DEPLOYER",
-                    serverId: "SRI_JFROG",
-                    releaseRepo: "devops-libs-release-local",
-                    snapshotRepo: "devops-libs-snapshot-local"
-                )
-
-                
+        stage('build'){
+        steps{
+            sh 'mvn clean package'
             }
         }
-
-        stage ('Exec Maven') {
-            steps {
-                rtMavenRun (
-                    tool: 'MVN_3.6.3', 
-                    pom: 'pom.xml',
-                    goals: 'clean install',
-                    deployerId: "MAVEN_DEPLOYER"
-                    
-                )
+        stage('archive-artifacts'){
+            steps{
+                archiveArtifacts artifacts: 'target/*.jar', followSymlinks: false
             }
         }
-
-        stage ('Publish build info') {
-            steps {
-                rtPublishBuildInfo (
-                    serverId: "SRI_JFROG"
-                )
+        stage('unit-tests'){
+            steps{
+                junit '**/*.xml'
             }
         }
     }
